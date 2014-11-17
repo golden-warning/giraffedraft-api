@@ -1,4 +1,4 @@
-from BeautifulSoup import BeautifulSoup, __version__
+from bs4 import BeautifulSoup
 import re
 
 print "start"
@@ -8,9 +8,12 @@ with open("yahoosports.html","r") as f:
 
 print "done"
 
-def wrap(string):
-	return re.compile(r"\b" + string + "\b", re.IGNORECASE)
 
-print parsed_html.body.findAll(True , {"class": wrap("TA-end")})
-input()
-print parsed_html.body.findAll(True, { "class" : wrap("ys-player") })
+
+# still only grabbing 35 players wtf
+
+print len(parsed_html.find_all("th", class_ = "ys-stat"))
+
+print "========="
+
+print len(parsed_html.find_all("tr", class_ = "ys-player"))
