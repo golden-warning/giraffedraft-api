@@ -3,7 +3,7 @@ from json import dumps, loads
 from parser import data
 
 
-print data
+print "cheese"
 
 
 import numpy as np

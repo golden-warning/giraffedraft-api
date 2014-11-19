@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import re
 
+print "foo"
+
 with open("yahoosports.html","r") as f:
 	parsed_html = BeautifulSoup(f.read())
 
@@ -27,5 +29,3 @@ for player in parsed_html.find_all("tr", class_ = "ys-player"):
 	stat_pairs.reverse()
 
 	data.append(dict(stat_pairs))
-
-print data[:5]
