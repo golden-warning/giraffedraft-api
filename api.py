@@ -8,11 +8,6 @@ print data
 
 import numpy as np
 
-with open('../data/combined.txt') as f:
-	combined_str = f.read()
-	combined = loads(combined_str)
-
-
 @route('/api')
 def index():
 	return "welcome to the API! Enjoy your stay"
