@@ -25,6 +25,10 @@ def add_dict(d0,d1):
 		out[key] = d0[key] + d1[key]
 	return out
 
+def remove_once(lst, item):
+	idx = lst.index(item)
+	return lst[:idx] + lst[idx+1:]
+
 def eval_history( history, player ):
 	player_to_dict = {}
 	for name, d in history:
@@ -36,9 +40,9 @@ def eval_history( history, player ):
 
 	# compute the probability that you win a face-off against any of the other players
 
-	outcomes = [ 
+	outcomes = [
 		category_compare(
-			player_to_dict[player], 
+			player_to_dict[player],
 			player_to_dict[name]
 		) for name in player_to_dict if name != player]
 
@@ -92,17 +96,25 @@ def heuristic_team(history, player):
 	for name, d in history:
 		player_to_dict[name].append(d)
 
-	outcomes = [ 
+	outcomes = [
 		category_compare(
-			average_dicts( player_to_dict[player] ), 
+			average_dicts( player_to_dict[player] ),
 			average_dicts( player_to_dict[name] )
 		) for name in player_to_dict if name != player]
 
 	return sum(outcomes)/len(outcomes)
 
-
-
 def solve_heuristic(n, player_index, players, history=None, inventory=None, horizon=None, prehistory=None):
+	"""\
+n: 				Total number of moves left
+player_index: 	Index of current player
+players: 		Number of players in the game
+history: 		Current sequence of considered moves
+inventory: 		Set of available moves
+horizon: 		Number of moves into the future we're allowed to look before falling back to heuristic
+prehistory: 	All moves the happened before your current move (not under your control)
+
+	"""
 	if history is None:
 		history = []
 
@@ -144,7 +156,7 @@ def solve_heuristic(n, player_index, players, history=None, inventory=None, hori
 				"player_index" : (player_index + 1) % players,
 				"history" : history + [(player_index, item)],
 				"players" : players,
-				"inventory" : [x for x in inventory if x != item],
+				"inventory" : remove_once(inventory, item)
 				"horizon" : horizon-1,
 				"prehistory" : prehistory
 			}
@@ -186,15 +198,3 @@ print solve_heuristic(n = 4, player_index = 0, players = 2, prehistory = None, h
 	{"a" : 9, "b" : 8, "c" : 15},
 	{"a" : 3, "b" : 5, "c" : 2}
 ]);
-
-
-
-
-
-
-
-
-
-
-
-
