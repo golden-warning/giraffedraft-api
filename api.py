@@ -1,5 +1,10 @@
 from bottle import route, run, template, post, get, response
 from json import dumps, loads
+from parser import data
+
+
+print data
+
 
 import numpy as np
 
