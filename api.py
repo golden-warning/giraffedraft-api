@@ -1,6 +1,6 @@
 from bottle import route, run, template, post, get, response
 from json import dumps, loads
-from parser import data
+#from parser import data
 
 
 print "cheese"
@@ -21,7 +21,7 @@ def index():
 @route('/api/whateva')
 def index():
 	response.content_type = "application/json"
-	return combined_str
+	return "combined_str"
 
 
 
