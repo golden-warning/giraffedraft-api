@@ -155,7 +155,7 @@ sweep : whether you are sweeping left or right.
 			sorted_inventory = sorted(inventory, key = heuristic_individual, reverse = True)
 		else:
 			sorted_inventory = sorted(
-				[ x for x in inventory if isinstance(x, dict) or x.id not in ignore_first ],
+				[ x for x in inventory if type(x) == dict or x.id not in ignore_first ],
 				key = heuristic_individual,
 				reverse = True
 			)
