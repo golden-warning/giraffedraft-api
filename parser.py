@@ -11,7 +11,33 @@ def floatify(x):
 	except ValueError:
 		return x
 
+def mean(arr):
+	nums = [x for x in arr if isinstance(x,int) or isinstance(x,float)]
+	if len(nums) == 0:
+		print arr
+		assert False
+	return sum(nums)/len(nums)
+
+def num_rat(arr):
+
+	if len(arr) == 0:
+		print arr
+		assert False
+
+	num_count = 0
+	for x in arr:
+		if isinstance(x,int) or isinstance(x,float):
+			num_count += 1
+	return num_count/float(len(arr))
+
+def all_keys(dicts):
+	out = set()
+	for d in dicts:
+		out.update(d.keys())
+	return out
+
 data = []
+
 
 # get all the players and add the team name, position, and player name
 
@@ -46,6 +72,24 @@ for player in parsed_html.find_all("tr", class_ = "ys-player"):
 	id_counter += 1
 
 	data.append(player_dict)
+
+# get means of numerical columns
+
+means = {}
+for key in all_keys(data):
+	col = [d[key] for d in data]
+
+	if len(col) == 0:
+		print key, "empty key"
+		assert False
+
+	if num_rat(col) >= 0.9:
+		means[key] = mean(col)
+
+print means
+
+
+
 
 
 
