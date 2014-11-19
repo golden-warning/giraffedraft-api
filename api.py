@@ -6,7 +6,7 @@ from json import dumps, loads
 print "cheese"
 
 
-import numpy as np
+#import numpy as np
 
 @route('/api')
 def index():
