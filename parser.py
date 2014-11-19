@@ -10,10 +10,29 @@ print "done"
 
 
 
-# still only grabbing 35 players wtf
+stat_names = [x.text for x in parsed_html.find_all("th", class_ = "ys-stat")]
 
-print len(parsed_html.find_all("th", class_ = "ys-stat"))
 
-print "========="
+data = []
 
-print len(parsed_html.find_all("tr", class_ = "ys-player"))
+
+
+for player in parsed_html.find_all("tr", class_ = "ys-player"):
+
+	player_raw = [x.text for x in player.find_all("td")]
+
+	player_raw.pop()
+
+
+	stat_pairs = []
+	for i in range(-1, -len(stat_names), -1):
+		stat_pairs.append( (stat_names[i], player_raw[i] ) )
+
+	stat_pairs.reverse()
+
+	data.append(dict(stat_pairs))
+
+print data[:5]
+
+
+
