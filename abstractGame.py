@@ -1,5 +1,10 @@
 from collections import defaultdict
 
+# note, solve_heuristic has a ton of requried arguments.
+# ignore_first takes a bunch of id numbers. id numbers are looked up on the objects passed into solve_heuristic,
+# which *should* subclass the built-in class dict.
+# solve_heuristic will throw an exception if the item has no id field, UNLESS it is a raw dictionary.
+
 def dictify(itr):
 	return dict(enumerate(itr))
 
@@ -48,39 +53,39 @@ def eval_history( history, player ):
 
 	return sum(outcomes)/len(outcomes)
 
-def solve(n, player_index, players, history=None, inventory=None):
-	if history is None:
-		history = []
+# def solve(n, player_index, players, history=None, inventory=None):
+# 	if history is None:
+# 		history = []
 
-	assert inventory is not None
+# 	assert inventory is not None
 
-	if n == 0:
-		return history
+# 	if n == 0:
+# 		return history
 
-	if n >= 1:
-		best = None
-		best_score = None
-		for item in sorted(inventory, key = heuristic_individual, reverse = True):
-			new = {
-				"n" : n-1,
-				"player_index" : (player_index + 1) % players,
-				"history" : history + [(player_index, item)],
-				"players" : players,
-				"inventory" : [x for x in inventory if x != item]
-			}
+# 	if n >= 1:
+# 		best = None
+# 		best_score = None
+# 		for item in sorted(inventory, key = heuristic_individual, reverse = True):
+# 			new = {
+# 				"n" : n-1,
+# 				"player_index" : (player_index + 1) % players,
+# 				"history" : history + [(player_index, item)],
+# 				"players" : players,
+# 				"inventory" : [x for x in inventory if x != item]
+# 			}
 
-			cand = solve(**new)
-			cand_score = eval_history(cand, player_index)
+# 			cand = solve(**new)
+# 			cand_score = eval_history(cand, player_index)
 
-			better = cand_score > best_score
+# 			better = cand_score > best_score
 
-			if better:
-				best = cand
-				best_score = cand_score
+# 			if better:
+# 				best = cand
+# 				best_score = cand_score
 
-		return best
+# 		return best
 
-	raise ValueError("invalid value for n: " + n)
+# 	raise ValueError("invalid value for n: " + n)
 
 
 # average for a dictionary
@@ -104,7 +109,9 @@ def heuristic_team(history, player):
 
 	return sum(outcomes)/len(outcomes)
 
-def solve_heuristic(n, player_index, players, history=None, inventory=None, horizon=None, prehistory=None, sweep = None):
+solve_heuristic_args = ["n", "player_index", "history", "inventory", "horizon", "prehistory", "sweep", "ignore_first"]
+
+def solve_heuristic(n, player_index, players, history=None, inventory=None, horizon=None, prehistory=None, sweep = None, ignore_first = None):
 	"""\
 n: 				Total number of moves left
 player_index: 	Index of current player
@@ -121,6 +128,9 @@ sweep : whether you are sweeping left or right.
 
 	if prehistory is None:
 		prehistory = []
+
+	if ignore_first is None:
+		ignore_first = set()
 
 	assert inventory is not None
 	assert horizon is not None
@@ -140,7 +150,17 @@ sweep : whether you are sweeping left or right.
 		best_cand = None
 		best_score = None
 
-		for cand in sorted(inventory, key = heuristic_individual, reverse = True):
+		# if we're supposed to ignore certain players on the first move, ignore them
+		if ignore_first is None:
+			sorted_inventory = sorted(inventory, key = heuristic_individual, reverse = True)
+		else:
+			sorted_inventory = sorted(
+				[ x for x in inventory if isinstance(x, dict) or x.id not in ignore_first ],
+				key = heuristic_individual,
+				reverse = True
+			)
+
+		for cand in sorted_inventory:
 
 			cand_history = prehistory + history + [(player_index, cand)]
 
@@ -224,4 +244,4 @@ print solve_heuristic(n = 4, player_index = 0, players = 2, prehistory = None, h
 	{"a" : 3, "b" : 4, "c" : 21},
 	{"a" : 9, "b" : 8, "c" : 15},
 	{"a" : 3, "b" : 5, "c" : 2}
-], sweep = 1);
+], sweep = 1, ignore_first = set());
