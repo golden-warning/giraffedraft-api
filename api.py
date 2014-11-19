@@ -1,5 +1,7 @@
 from bottle import route, run, template, post, get, response
 from json import dumps, loads
+
+from parser import data, means
 #from parser import data
 
 
@@ -14,14 +16,13 @@ def index():
 
 @route('/api/allPlayers')
 def index():
-	rv = [{"turn" : "down", "for" : "what"}]
 	response.content_type = "application/json"
-	return dumps(rv)
+	return dumps(data)
 
-@route('/api/whateva')
+@route('/api/means')
 def index():
 	response.content_type = "application/json"
-	return "combined_str"
+	return dumps(means)
 
 
 
