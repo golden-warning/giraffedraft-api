@@ -104,7 +104,7 @@ def heuristic_team(history, player):
 
 	return sum(outcomes)/len(outcomes)
 
-def solve_heuristic(n, player_index, players, history=None, inventory=None, horizon=None, prehistory=None):
+def solve_heuristic(n, player_index, players, history=None, inventory=None, horizon=None, prehistory=None, sweep = None):
 	"""\
 n: 				Total number of moves left
 player_index: 	Index of current player
@@ -113,6 +113,7 @@ history: 		Current sequence of considered moves
 inventory: 		Set of available moves
 horizon: 		Number of moves into the future we're allowed to look before falling back to heuristic
 prehistory: 	All moves the happened before your current move (not under your control)
+sweep : whether you are sweeping left or right.
 
 	"""
 	if history is None:
@@ -123,6 +124,11 @@ prehistory: 	All moves the happened before your current move (not under your con
 
 	assert inventory is not None
 	assert horizon is not None
+
+	assert 0 <= player_index
+	assert player_index < players
+
+	assert sweep in (1, -1)
 
 	# if n is zero you're done!
 	if n == 0:
@@ -151,15 +157,36 @@ prehistory: 	All moves the happened before your current move (not under your con
 		best = None
 		best_score = None
 		for item in sorted(inventory, key = heuristic_individual, reverse = True):
+
+			# note: sweep direction and player_index might be wrong, correcting for it below!
 			new = {
 				"n" : n-1,
-				"player_index" : (player_index + 1) % players,
+				"player_index" : (player_index + sweep),
 				"history" : history + [(player_index, item)],
 				"players" : players,
-				"inventory" : remove_once(inventory, item)
+				"inventory" : remove_once(inventory, item),
 				"horizon" : horizon-1,
-				"prehistory" : prehistory
+				"prehistory" : prehistory,
+				"sweep" : sweep # sweep is the same by default
 			}
+
+			# correct for oversweeping and undersweeping
+
+			if new["player_index"] < 0:
+				assert player_index == -1
+				new["player_index"] = 0
+				new["sweep"] = 1
+
+			# correct for oversweeping
+
+			elif new["player_index"] > players-1:
+				# gotta be one after the last position
+				assert new["player_index"] == players
+				new["player_index"] = players-1
+				new["sweep"] = -1
+
+			assert 0 <= new["player_index"]
+			assert new["player_index"] < players
 
 			cand = solve_heuristic(**new)
 			cand_score = eval_history(cand, player_index)
@@ -178,23 +205,23 @@ prehistory: 	All moves the happened before your current move (not under your con
 
 # testing section
 
-print solve(n = 4, player_index = 0, players = 2, history = None, inventory = [
-	{"a" : 1, "b" : 2, "c" : 10},
-	{"a" : 3, "b" : 4, "c" : 21},
-	{"a" : 9, "b" : 8, "c" : 15},
-	{"a" : 3, "b" : 5, "c" : 2}
-]);
+# print solve(n = 4, player_index = 0, players = 2, history = None, inventory = [
+# 	{"a" : 1, "b" : 2, "c" : 10},
+# 	{"a" : 3, "b" : 4, "c" : 21},
+# 	{"a" : 9, "b" : 8, "c" : 15},
+# 	{"a" : 3, "b" : 5, "c" : 2}
+# ]);
 
-print average_dicts([
-	{"a" : 1, "b" : 2, "c" : 10},
-	{"a" : 3, "b" : 4, "c" : 21},
-	{"a" : 9, "b" : 8, "c" : 15},
-	{"a" : 3, "b" : 5, "c" : 2}
-])
+# print average_dicts([
+# 	{"a" : 1, "b" : 2, "c" : 10},
+# 	{"a" : 3, "b" : 4, "c" : 21},
+# 	{"a" : 9, "b" : 8, "c" : 15},
+# 	{"a" : 3, "b" : 5, "c" : 2}
+# ])
 
 print solve_heuristic(n = 4, player_index = 0, players = 2, prehistory = None, horizon = 2, history = None, inventory = [
 	{"a" : 1, "b" : 2, "c" : 10},
 	{"a" : 3, "b" : 4, "c" : 21},
 	{"a" : 9, "b" : 8, "c" : 15},
 	{"a" : 3, "b" : 5, "c" : 2}
-]);
+], sweep = 1);
