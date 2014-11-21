@@ -41,7 +41,7 @@ data = []
 
 # get all the players and add the team name, position, and player name
 
-id_counter = 1
+id_counter = 0
 
 for player in parsed_html.find_all("tr", class_ = "ys-player"):
 
@@ -86,7 +86,8 @@ for key in all_keys(data):
 	if num_rat(col) >= 0.9:
 		means[key] = mean(col)
 
-print means
+if __name__ == "__main__":
+	print means
 
 
 
