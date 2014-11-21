@@ -5,7 +5,7 @@ from collections import defaultdict
 # which *should* subclass the built-in class dict.
 # solve_heuristic will throw an exception if the item has no id field, UNLESS it is a raw dictionary.
 
-BRANCH_LIMIT = 20
+BRANCH_LIMIT = 10
 
 def dictify(itr):
 	return dict(enumerate(itr))

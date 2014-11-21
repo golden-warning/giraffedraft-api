@@ -1,4 +1,4 @@
-from bottle import route, run, template, post, get, response
+from bottle import route, run, template, post, get, response, request
 from json import dumps, loads
 
 from logic import Vector, VectorCollection
@@ -22,24 +22,24 @@ sample = ("""{
   }""")
 
 
-players = VectorCollection.create(dicts = data[:20], means = means, numeric_keys = numeric_keys)
+players = VectorCollection.create(dicts = data, means = means, numeric_keys = numeric_keys)
 
 print "=" * 10
 print "created!"
 print "=" * 10
 
-foo = players.query(
-	top_n = 5,
-	n = 12,
-	player_index = 0,
-	players = 3,
-	history = None,
-	horizon = 3,
-	prehistory = None,
-	sweep = 1
-)
+# foo = players.query(
+# 	top_n = 5,
+# 	n = 12,
+# 	player_index = 0,
+# 	players = 3,
+# 	history = None,
+# 	horizon = 3,
+# 	prehistory = None,
+# 	sweep = 1
+# )
 
-print "\n".join([str(foo[x][0][1]) for x in range(5)])
+# print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
 
 @route('/api')
@@ -56,7 +56,7 @@ def index():
 	response.content_type = "application/json"
 	return dumps(means)
 
-@route('/test/suggest')
+@post('/test/suggest')
 def index():
 	response.content_type = "application/json"
 	keys = r"3PTM ADP AST BLK FG% FGA FGM FT% FTA FTM PTS REB ST TO".split(" ")
@@ -70,9 +70,11 @@ def index():
 
 	return dumps(out)
 
-@route('/api/suggest'):
+@post('/api/suggest')
 def index():
-	pass
+	all_items = request.forms.allitems()
+	request_data = loads(all_items[0][0])
+	print request_data
 
 
-# run(host='localhost', port=8080)
+run(host='0.0.0.0', port=8080)
