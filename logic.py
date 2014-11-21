@@ -64,7 +64,7 @@ class VectorCollection:
 	def query(self,**stat):
 		# subset of args
 		assert all( (arg in stat) for arg in solve_heuristic_args if arg not in ["ignore_first", "inventory"] )
-		assert "ignore_first" not in stat
+		# assert "ignore_first" not in stat
 
 		assert "top_n" in stat
 
