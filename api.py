@@ -106,7 +106,7 @@ thing = players.list[0]
 # 	sweep = 1
 # )
 
-print "\n".join([str(foo[x][0][1]) for x in range(5)])
+# print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
