@@ -54,6 +54,11 @@ class VectorCollection:
 				"id_" : id_,
 				"means" : means
 			})
+
+			# check that all the iterable things really are numbers
+			for v in objs[-1]["iterable"].values():
+				assert type(v) in (int, float)
+
 		return VectorCollection(objs)
 
 	def query(self,**stat):

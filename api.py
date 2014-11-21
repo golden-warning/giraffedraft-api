@@ -1,3 +1,4 @@
+import bottle
 from bottle import route, run, template, post, get, response, request
 from json import dumps, loads
 
@@ -13,6 +14,12 @@ import re
 
 from parser import data, means
 #from parser import data
+
+
+# enable app
+
+app = bottle.app()
+
 
 # NOTE: no average draft pick in numeric keys!
 numeric_keys = r"3PTM AST BLK FG% FGA FGM FT% FTA FTM PTS REB ST TO".split(" ")
@@ -80,6 +87,10 @@ sample = ("""{
 
 players = VectorCollection.create(dicts = data, means = means, numeric_keys = numeric_keys)
 
+thing = players.list[0]
+
+print [key for key in thing]
+
 print "=" * 10
 print "created!"
 print "=" * 10
@@ -97,32 +108,39 @@ foo = players.query(
 
 print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
-def enable_cors():
-    """
-    You need to add some headers to each request.
-    Don't use the wildcard '*' for Access-Control-Allow-Origin in production.
-    """
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+def enable_cors(fn):
+    def _enable_cors(*args, **kwargs):
+        # set CORS headers
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
-enable_cors()
+        if bottle.request.method != 'OPTIONS':
+            # actual request; reply with the actual response
+            return fn(*args, **kwargs)
 
-@route('/api')
+    return _enable_cors
+
+@app.route('/api', method = "GET")
+@enable_cors
 def index():
 	return "welcome to the API! Enjoy your stay"
 
-@route('/api/allPlayers')
+@app.route('/api/allPlayers', method = "GET")
+@enable_cors
 def index():
 	response.content_type = "application/json"
 	return dumps(data)
 
-@route('/api/means')
+@app.route('/api/means', method = "GET")
+@enable_cors
 def index():
 	response.content_type = "application/json"
 	return dumps(means)
 
-@post('/test/suggest')
+
+@app.route('/test/suggest', method = ["OPTIONS", "POST"] )
+@enable_cors
 def index():
 	response.content_type = "application/json"
 	keys = r"3PTM ADP AST BLK FG% FGA FGM FT% FTA FTM PTS REB ST TO".split(" ")
@@ -136,7 +154,8 @@ def index():
 
 	return dumps(out)
 
-@post('/api/suggest')
+@app.route('/api/suggest', method = ["OPTIONS", "POST"])
+@enable_cors
 def index():
 	all_items = request.forms.allitems()
 	request_data = loads(all_items[0][0])
@@ -164,7 +183,7 @@ def index():
 		players = game_obj["players"]
 	)
 
-	print game_obj
+	print [x[0][1] for x in out]
 
 
 hostname = socket.gethostname()
