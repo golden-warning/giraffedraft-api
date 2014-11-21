@@ -55,7 +55,7 @@ def game_state_to_array(obj):
 				else:
 					my_vector[k] = v
 
-			my_vector["yahoo-rank"] = my_vector
+			my_vector["yahoo-rank"] = yahoo_rank
 
 			vector_name = team_name_regex.split(vector_obj["playerName"])[0].strip()
 
@@ -68,11 +68,7 @@ def game_state_to_array(obj):
 	return {"prehistory" : prehistory, "player_index" : player_index, "players" : players}
 
 
-def position_of_name(string):
-	for idx,row in enumerate(data):
-		if data["name"] == string:
-			return idx, row
-	raise ValueError
+
 
 
 # sample data
