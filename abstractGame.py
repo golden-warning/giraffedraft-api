@@ -7,6 +7,9 @@ from collections import defaultdict
 
 BRANCH_LIMIT = 10
 
+numeric_keys = r"3PTM AST BLK FG% FGA FGM FT% FTA FTM PTS REB ST TO".split(" ")
+
+
 def dictify(itr):
 	return dict(enumerate(itr))
 
@@ -22,25 +25,23 @@ def heuristic_individual(d):
 
 def add_dict(d0,d1):
 	out = {}
-	if set(d0.keys()) == set(d1.keys()) or isinstance(d1, defaultdict):
-		pass
+	if isinstance(d0, defaultdict):
+		if isinstance(d1, defaultdict):
+			return defaultdict(lambda : 0)
+		else:
+			for key in numeric_keys:
+				out[key] = 0 + d0[key] + d1[key]
+			return out
 	else:
-		print "=" * 20
-		print sorted(d0.keys())
-		print "=" * 20
-		print sorted(d1.keys())
+		if isinstance(d1, defaultdict):
+			return add_dict(d1, d0)
+		else:
+			for key in numeric_keys:
+				out[key] = 0 + d0[key] + d1[key]
+			return out
+	if out == {}:
 		assert False
 
-	for key in d0:
-		if type(d0[key]) not in (int, float):
-			print d0[key]
-			assert False
-
-		if type(d1[key]) not in (int, float):
-			print d1[key]
-			assert False
-
-		out[key] = d0[key] + d1[key]
 	return out
 
 def remove_once(lst, item):
@@ -103,13 +104,20 @@ def eval_history( history, player ):
 
 # average for a dictionary
 def average_dicts(lst):
+
 	sum_dict = defaultdict(lambda : 0)
 	for d in lst:
+
+		# debugging test
+		# for k,v in d.iteritems():
+		# 	if type(v) is not float:
+				
 		sum_dict = add_dict(d, sum_dict)
 	return {k : v/float(len(sum_dict)) for k,v in sum_dict.iteritems()}
 
 # take each team and compute the average stats per player. then see how they do when facing each other
 def heuristic_team(history, player):
+
 	player_to_dict = defaultdict(lambda : [])
 	for name, d in history:
 		player_to_dict[name].append(d)
@@ -146,6 +154,15 @@ sweep : whether you are sweeping left or right.
 		ignore_first = set()
 
 	assert inventory is not None
+
+	# debug check, see where the non-numeric keys are slipping in
+	for inventory_item in inventory:
+		for key, value in inventory_item.iteritems():
+			if type(value) != float:
+				print key, value
+				print inventory_item
+				assert False
+
 	assert horizon is not None
 
 	assert 0 <= player_index
