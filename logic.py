@@ -1,85 +1,98 @@
-import numpy as np
+from abstractGame import solve_heuristic, solve_heuristic_args
 
-from collections import namedtuple, defaultdict
+def fill_seq(*args):
+	out = {}
+	for d in args:
+		for (k,v) in d.iteritems():
+			out[k] = v
+	return out
+
+class Vector(dict):
+	def __init__(self, iterable, data, id_, means):
+		# copy the iterable keys into the dictionary that you inherit from
+		for key, value in iterable.iteritems():
+			self[key] = value/means[key]
+
+		self.raw = iterable
+
+		assert isinstance(data, dict)
+		assert isinstance(id_, int)
+
+		self.data = data
+		self.id = id_
+
+	# def __repr__(self):
+
+	# 	out = {}
+	# 	out["raw"] = self.raw
+	# 	out["data"] = self.data
+	# 	out["id"] = self.id
+	# 	out["numeric"] = dict.__repr__(self)
+
+	# 	return "Vector: %s" % repr(out)
+
+	def __repr__(self):
+		return "Vector # %d : %s" % (self.id, repr(self.data))
+
+class VectorCollection:
+	def __init__(self, objs):
+		self.list = []
+		for obj in objs:
+			if isinstance(obj, Vector):
+				self.list.append(obj)
+			else:
+				self.list.append(Vector(**obj))
+
+	@classmethod
+	def create(cls, dicts, means, numeric_keys):
+		objs = []
+		for id_, d in enumerate(dicts):
+
+			objs.append({
+				"iterable" : {k : v for k,v in d.iteritems() if k in numeric_keys},
+				"data" : { k : v for k,v in d.iteritems() if k not in numeric_keys},
+				"id_" : id_,
+				"means" : means
+			})
+		return VectorCollection(objs)
+
+	def query(self,**stat):
+		# subset of args
+		assert all( (arg in stat) for arg in solve_heuristic_args if arg not in ["ignore_first", "inventory"] )
+		assert "ignore_first" not in stat
+
+		assert "top_n" in stat
+
+		out = []
+		excluded_ids = []
+		for x in range(stat["top_n"]):
+
+			# build argument object! gotta take away some keys and add others
+			# it's nuts
+
+			# print excluded_ids
+
+			arg_obj = fill_seq(stat,
+				{
+					"ignore_first" : excluded_ids,
+					"inventory" : self.list
+				}
+			)
+
+			del arg_obj["top_n"]
+
+			hist = solve_heuristic(**arg_obj)
+			recommended_player = hist[0][1]
+
+			out.append(hist)
+
+			excluded_ids.append(recommended_player.id)
+
+		return out;
 
 
 
-class VectorContext:
-	def __init__(self, dicts):
-		self.dicts = dicts
-		self.stats = set()
-		for d in dicts:
-			for key in d:
-				self.stats.add(key)
 
-	def apply_stat(self, stat, fun):
-		return fun( d[key] for d in self.dicts if key in d )
-
-	def mean_stat(self, stat):
-		return self.apply_stat(stat, np.mean)
-
-	def median_stat(self, stat):
-		return self.apply_stat(stat, np.median)
-
-	def sum_indices(self, stat, indices):
-		out = defaultdict(lambda : 0)
-		for index in indices:
-			for d in self.dicts:
-				for stat, value in d.iteritems():
-					out[d] += value
-
-	def unit_weight_list(self):
-
-		def unit_sum(d):
-			return sum(d.values())
-
-		return sorted(self.dicts, key=unit_sum, reverse=True)
-
-	def weight_list(self, weights):
-
-		def weight_sum(d):
-			out = 0
-			for k,v in d.iteritems:
-				out += weights[k]*v
-			return out
-
-		return sorted(self.dicts, key=weight_sum, reverse=True)
-
-
-
-class Player:
-	def __init__(self, context, indices, stat_to_weight):
-		self.context = context
-		self.indices = indices
-		self.stat_to_weight = stat_to_weight
-
-	def compare_stats(self, other):
-		"compare self and other on chosen stats, return dictionary"
-		out = {}
-		for (stat, val) in self.stat_to_weight.iteritems():
-			# get the scores in each category for self and other
-			my_score = self.context.sum_indices( stat, self.indices )
-			your_score = other.context.sum_indices( stat, other.indices )
-
-			out[stat] = cmp(my_score, your_score) * val
-		return out
-
-	def compare(self, other):
-		return sum( self.compare_stats(other).values() )
-
-
-
-
-
-# testing portion
-
-VectorContext( ({4 : 5}, {6 : 7}) )
-
-
-
-
-
-
-
+		
 
 

@@ -5,6 +5,8 @@ from collections import defaultdict
 # which *should* subclass the built-in class dict.
 # solve_heuristic will throw an exception if the item has no id field, UNLESS it is a raw dictionary.
 
+BRANCH_LIMIT = 10
+
 def dictify(itr):
 	return dict(enumerate(itr))
 
@@ -20,13 +22,24 @@ def heuristic_individual(d):
 
 def add_dict(d0,d1):
 	out = {}
-	if d0.keys() == d1.keys() or isinstance(d1, defaultdict):
+	if set(d0.keys()) == set(d1.keys()) or isinstance(d1, defaultdict):
 		pass
 	else:
-		print d0, d1
+		print "=" * 20
+		print sorted(d0.keys())
+		print "=" * 20
+		print sorted(d1.keys())
 		assert False
 
 	for key in d0:
+		if type(d0[key]) not in (int, float):
+			print d0[key]
+			assert False
+
+		if type(d1[key]) not in (int, float):
+			print d1[key]
+			assert False
+
 		out[key] = d0[key] + d1[key]
 	return out
 
@@ -144,6 +157,22 @@ sweep : whether you are sweeping left or right.
 	if n == 0:
 		return history
 
+	# compute the sorted inventory
+	
+	if ignore_first is None:
+		sorted_inventory = sorted(inventory, key = heuristic_individual, reverse = True)
+	else:
+		sorted_inventory = sorted(
+			[ x for x in inventory if type(x) == dict or x.id not in ignore_first ],
+			key = heuristic_individual,
+			reverse = True
+		)
+
+	sorted_inventory = sorted_inventory[:BRANCH_LIMIT]
+
+
+
+
 	# if horizon is zero, pick the player that maximizes the heuristic
 
 	if horizon == 0:
@@ -151,14 +180,7 @@ sweep : whether you are sweeping left or right.
 		best_score = None
 
 		# if we're supposed to ignore certain players on the first move, ignore them
-		if ignore_first is None:
-			sorted_inventory = sorted(inventory, key = heuristic_individual, reverse = True)
-		else:
-			sorted_inventory = sorted(
-				[ x for x in inventory if type(x) == dict or x.id not in ignore_first ],
-				key = heuristic_individual,
-				reverse = True
-			)
+
 
 		for cand in sorted_inventory:
 
@@ -176,7 +198,7 @@ sweep : whether you are sweeping left or right.
 	if n >= 1:
 		best = None
 		best_score = None
-		for item in sorted(inventory, key = heuristic_individual, reverse = True):
+		for item in sorted_inventory:
 
 			# note: sweep direction and player_index might be wrong, correcting for it below!
 			new = {
@@ -193,7 +215,7 @@ sweep : whether you are sweeping left or right.
 			# correct for oversweeping and undersweeping
 
 			if new["player_index"] < 0:
-				assert player_index == -1
+				assert new["player_index"] == -1
 				new["player_index"] = 0
 				new["sweep"] = 1
 
@@ -239,9 +261,11 @@ sweep : whether you are sweeping left or right.
 # 	{"a" : 3, "b" : 5, "c" : 2}
 # ])
 
-print solve_heuristic(n = 4, player_index = 0, players = 2, prehistory = None, horizon = 2, history = None, inventory = [
-	{"a" : 1, "b" : 2, "c" : 10},
-	{"a" : 3, "b" : 4, "c" : 21},
-	{"a" : 9, "b" : 8, "c" : 15},
-	{"a" : 3, "b" : 5, "c" : 2}
-], sweep = 1, ignore_first = set());
+if __name__ == "__main__":
+
+	print solve_heuristic(n = 4, player_index = 0, players = 2, prehistory = None, horizon = 2, history = None, inventory = [
+		{"a" : 1, "b" : 2, "c" : 10},
+		{"a" : 3, "b" : 4, "c" : 21},
+		{"a" : 9, "b" : 8, "c" : 15},
+		{"a" : 3, "b" : 5, "c" : 2}
+	], sweep = 1, ignore_first = set());
