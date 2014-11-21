@@ -183,7 +183,7 @@ def index():
 		players = game_obj["players"]
 	)
 
-	return dumps( [x[0][1] for x in out] )
+	return dumps( [x[0][1].data["name"] for x in out] )
 
 
 hostname = socket.gethostname()
