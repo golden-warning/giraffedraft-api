@@ -41,7 +41,13 @@ def game_state_to_array(obj):
 			player_index = value["draftPosition"]-1
 
 		for yahoo_rank, vector_obj in vectors.iteritems():
-			my_vector = copy(vector_obj)
+			my_vector = {}
+			for k,v in vector_obj.iteritems():
+				if k in numeric_keys:
+					my_vector[k] = float(v)
+				else:
+					my_vector[k] = v
+
 			my_vector["yahoo-rank"] = my_vector
 
 			vector_name = team_name_regex.split(vector_obj["playerName"])[0].strip()
@@ -78,19 +84,29 @@ print "=" * 10
 print "created!"
 print "=" * 10
 
-# foo = players.query(
-# 	top_n = 5,
-# 	n = 12,
-# 	player_index = 0,
-# 	players = 3,
-# 	history = None,
-# 	horizon = 3,
-# 	prehistory = None,
-# 	sweep = 1
-# )
+foo = players.query(
+	top_n = 5,
+	n = 12,
+	player_index = 0,
+	players = 3,
+	history = None,
+	horizon = 3,
+	prehistory = None,
+	sweep = 1
+)
 
-# print "\n".join([str(foo[x][0][1]) for x in range(5)])
+print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
+def enable_cors():
+    """
+    You need to add some headers to each request.
+    Don't use the wildcard '*' for Access-Control-Allow-Origin in production.
+    """
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
+enable_cors()
 
 @route('/api')
 def index():

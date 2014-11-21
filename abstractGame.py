@@ -32,6 +32,14 @@ def add_dict(d0,d1):
 		assert False
 
 	for key in d0:
+		if type(d0[key]) not in (int, float):
+			print d0[key]
+			assert False
+
+		if type(d1[key]) not in (int, float):
+			print d1[key]
+			assert False
+
 		out[key] = d0[key] + d1[key]
 	return out
 

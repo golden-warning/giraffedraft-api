@@ -70,7 +70,7 @@ class VectorCollection:
 			# build argument object! gotta take away some keys and add others
 			# it's nuts
 
-			print excluded_ids
+			# print excluded_ids
 
 			arg_obj = fill_seq(stat,
 				{
