@@ -89,22 +89,22 @@ players = VectorCollection.create(dicts = data, means = means, numeric_keys = nu
 
 thing = players.list[0]
 
-print [key for key in thing]
+# print [key for key in thing]
 
-print "=" * 10
-print "created!"
-print "=" * 10
+# print "=" * 10
+# print "created!"
+# print "=" * 10
 
-foo = players.query(
-	top_n = 5,
-	n = 12,
-	player_index = 0,
-	players = 3,
-	history = None,
-	horizon = 3,
-	prehistory = None,
-	sweep = 1
-)
+# foo = players.query(
+# 	top_n = 5,
+# 	n = 12,
+# 	player_index = 0,
+# 	players = 3,
+# 	history = None,
+# 	horizon = 3,
+# 	prehistory = None,
+# 	sweep = 1
+# )
 
 print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
@@ -183,7 +183,7 @@ def index():
 		players = game_obj["players"]
 	)
 
-	print [x[0][1] for x in out]
+	return dumps( [x[0][1] for x in out] )
 
 
 hostname = socket.gethostname()
