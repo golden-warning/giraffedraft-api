@@ -28,6 +28,8 @@ team_keys = "team draftPosition isPlayer".split(" ")
 
 team_name_regex = re.compile(r"\w{,3} \-")
 
+name_to_id = {}
+
 def game_state_to_array(obj):
 	assert isinstance(obj, dict)
 
@@ -61,6 +63,8 @@ def game_state_to_array(obj):
 
 			my_vector["name"] = vector_name
 
+			# global name to id map
+
 			prehistory.append( (value["draftPosition"]-1, my_vector) )
 
 
@@ -82,6 +86,9 @@ sample = ("""{
 
 
 players = VectorCollection.create(dicts = data, means = means, numeric_keys = numeric_keys)
+
+for row in players.list:
+	name_to_id[row.data["name"]] = row.id
 
 thing = players.list[0]
 
@@ -176,10 +183,10 @@ def index():
 		inventory = data,
 		horizon = 3,
 		sweep = sweep_direction,
-		players = game_obj["players"]
+		players = game_obj["players"],
 	)
 
-	return dumps( [x[0][1].data["name"] for x in out] )
+	return dumps( x[0][1].data["name"] for x in out] )
 
 
 hostname = socket.gethostname()
