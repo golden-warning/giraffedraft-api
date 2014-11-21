@@ -87,6 +87,7 @@ for key in all_keys(data):
 		means[key] = mean(col)
 
 if __name__ == "__main__":
+	print data[0]
 	print means
 
 

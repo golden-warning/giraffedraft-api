@@ -5,11 +5,61 @@ from logic import Vector, VectorCollection
 
 import random
 
+from copy import copy
+
+import socket
+
+import re
+
 from parser import data, means
 #from parser import data
 
 # NOTE: no average draft pick in numeric keys!
 numeric_keys = r"3PTM AST BLK FG% FGA FGM FT% FTA FTM PTS REB ST TO".split(" ")
+
+team_keys = "team draftPosition isPlayer".split(" ")
+
+team_name_regex = re.compile(r"\w{,3} \-")
+
+def game_state_to_array(obj):
+	assert isinstance(obj, dict)
+
+	# prehistory is not in chronological order
+	# because it actually doesn't matter (and we can't recover that information)
+	prehistory = []
+
+	player_index = None
+
+	players = len(obj)
+
+	for key, value in obj.iteritems():
+		assert set(value.keys()) == set(team_keys)
+
+		vectors = value["team"]
+
+		if (value["isPlayer"]):
+			player_index = value["draftPosition"]-1
+
+		for yahoo_rank, vector_obj in vectors.iteritems():
+			my_vector = copy(vector_obj)
+			my_vector["yahoo-rank"] = my_vector
+
+			vector_name = team_name_regex.split(vector_obj["playerName"])[0].strip()
+
+			my_vector["name"] = vector_name
+
+			prehistory.append( (value["draftPosition"]-1, my_vector) )
+
+
+
+	return {"prehistory" : prehistory, "player_index" : player_index, "players" : players}
+
+
+def position_of_name(string):
+	for idx,row in enumerate(data):
+		if data["name"] == string:
+			return idx, row
+	raise ValueError
 
 
 # sample data
@@ -74,7 +124,36 @@ def index():
 def index():
 	all_items = request.forms.allitems()
 	request_data = loads(all_items[0][0])
-	print request_data
+
+	game_obj = game_state_to_array(request_data)
+
+	complete_cycle_count = int( len(game_obj["prehistory"])/game_obj["players"] )
+
+	if complete_cycle_count % 2 == 0:
+		sweep_direction = 1
+	else:
+		sweep_direction = -1
+
+	# n is wrong!
+	# doesn't remove players who have already been drafted
+	out = players.query(
+		top_n = 5,
+		n = 100,
+		player_index = game_obj["player_index"],
+		history = None,
+		prehistory = game_obj["prehistory"],
+		inventory = data,
+		horizon = 3,
+		sweep = sweep_direction,
+		players = game_obj["players"]
+	)
+
+	print game_obj
 
 
-run(host='0.0.0.0', port=8080)
+hostname = socket.gethostname()
+
+if hostname == "shotcallerapi":
+	run(host='0.0.0.0', port=8080)
+else:
+	run(host='localhost', port=8080)

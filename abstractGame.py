@@ -207,7 +207,7 @@ sweep : whether you are sweeping left or right.
 			# correct for oversweeping and undersweeping
 
 			if new["player_index"] < 0:
-				assert player_index == -1
+				assert new["player_index"] == -1
 				new["player_index"] = 0
 				new["sweep"] = 1
 
