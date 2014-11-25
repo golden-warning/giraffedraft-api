@@ -13,6 +13,7 @@ data History = History [(Int, Player)] deriving (Eq, Show)
 data GameState = GameState { 
 	gsN :: Int,
 	gsPlayerIndex :: Int,
+	gsPlayers :: Int,
 	gsHistory :: History,
 	gsHorizon :: Int,
 	gsPrehistory :: History,

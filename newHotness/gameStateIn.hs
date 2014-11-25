@@ -8,7 +8,7 @@ import GameState
 
 import qualified Data.Map as Map
 
-magicFields = ["id", "name"]
+magicFields = ["id", "name", "yahoo-rank", "playerName", "injured"]
 
 data GameStateIn = GameStateIn { 
 	n :: Int,
@@ -18,7 +18,8 @@ data GameStateIn = GameStateIn {
 	preHistory :: [(Int, [(String, String)])],
 	sweep :: Int,
 	ignoreFirst :: [Int],
-	inventory :: [[(String, String)]]
+	inventory :: [[(String, String)]],
+	players :: Int
 } deriving (Eq, Show, Data, Typeable)
 
 readGame :: String -> GameStateIn
@@ -44,9 +45,12 @@ gameState_of g =
 		gsPrehistory = History [(index, readPlayer list) | (index, list) <- preHistory g],
 		gsSweep = sw (sweep g),
 		gsIgnoreFirst = ignoreFirst g,
-		gsInventory = [readPlayer list | list <- inventory g]
+		gsInventory = [readPlayer list | list <- inventory g],
+		gsPlayers = players g
 	} where
 		sw 1 = SweepRight
 		sw (-1) = SweepLeft
-		sw _ = undefined
+		sw _ = error "illegal sweeping direction"
 
+gameState_of_string :: String -> GameState
+gameState_of_string st = gameState_of (readGame st)
