@@ -192,7 +192,7 @@ def index():
 	# n is wrong!
 	# doesn't remove players who have already been drafted
 	haskell_args = dumps( dict(
-		n = 10,
+		n = 2,
 		playerIndex = 0,
 		history = [], #game_obj["player_index"],
 		preHistory = [], # game_obj["prehistory"],
@@ -203,13 +203,13 @@ def index():
 		ignoreFirst = [] # [picked_already],
 	) )
 
-	sample = "{\"players\" : 4, \"n\" : 2, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
+	sample = "{\"players\" : 4, \"n\" : 10, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
 
 	print sample
 	# with open("frodo.txt", "w") as f:
 	# 	f.write(haskell_args)
 
-	a = test.query(sample)
+	a = test.query(haskell_args)
 
 
 

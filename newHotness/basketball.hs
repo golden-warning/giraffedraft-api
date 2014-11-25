@@ -178,8 +178,12 @@ solve gs = solve' (gs {
 solve' :: GameState -> History
 solve' gs
 	-- n is 0, return history
+	| gsN gs < 0 =
+		error "solve' : negative moves remaining"
 	| gsN gs == 0 = 
 		gsHistory gs
+	| gsHorizon gs < 0 =
+		error "solve' : negative horizon"
 	-- horizon is zero terminate you're done!
 	| gsHorizon gs == 0 =
 		gsHistory gs
