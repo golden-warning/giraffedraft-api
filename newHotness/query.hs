@@ -6,7 +6,10 @@ import Basketball (topN)
 import GameState
 import GameStateIn (gameState_of_string)
 
-main = getArgs >>=  (\ xs -> putStrLn (show (topN' 5 (head xs))))
+import Data.Map ((!))
+
+main = getArgs >>=  (\ xs -> putStrLn $ show (map getName $ topN' 10 (head xs))) where
+	getName (History ( (playerIndex, x) :_)) = (playerData x) ! "name"
 
 topN' :: Int -> String -> [History]
 topN' i gs = topN i (gameState_of_string gs)

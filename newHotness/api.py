@@ -15,7 +15,10 @@ import test
 from parser import data, means
 #from parser import data
 
-from logic import VectorCollection
+
+data = data[:10] # only take first ten players
+
+from Container import Container
 
 # enable app
 
@@ -23,7 +26,7 @@ app = bottle.app()
 
 
 def do_snd(fun):
-	return lambda x : fun(x[1])
+	return lambda x : (x[0],fun(x[1]))
 
 
 # NOTE: no average draft pick in numeric keys!
@@ -93,35 +96,8 @@ sample = ("""{
   }""")
 
 
-players = VectorCollection.create(dicts = data, means = means, numeric_keys = numeric_keys)
+players = Container(data = data, means = means, numeric_keys = numeric_keys)
 
-players_list = []
-
-for row in players.list:
-	name_to_id[row.data["name"]] = row.id
-
-	players_list.append( [("name", row.data["name"]), ("id", row.id)] + [ (str(k), str(v)) for k,v in row.items() ] )
-
-thing = players.list[0]
-
-# print [key for key in thing]
-
-# print "=" * 10
-# print "created!"
-# print "=" * 10
-
-# foo = players.query(
-# 	top_n = 5,
-# 	n = 12,
-# 	player_index = 0,
-# 	players = 3,
-# 	history = None,
-# 	horizon = 3,
-# 	prehistory = None,
-# 	sweep = 1
-# )
-
-# print "\n".join([str(foo[x][0][1]) for x in range(5)])
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
@@ -192,20 +168,21 @@ def index():
 	# n is wrong!
 	# doesn't remove players who have already been drafted
 	haskell_args = dumps( dict(
-		n = 2,
-		playerIndex = 0,
-		history = [], #game_obj["player_index"],
-		preHistory = [], # game_obj["prehistory"],
-		inventory = [[["a","5"]], [["a","7"]]], # players_list,
-		sweep = 1, # sweep_direction,
-		players = 2, # game_obj["players"],
+		n = 100,
+		playerIndex = game_obj["player_index"],
+		history = [],
+		preHistory = game_obj["prehistory"],
+		inventory = players.strpairs(),
+		sweep = sweep_direction,
+		players = game_obj["players"],
 		horizon = 1,
 		ignoreFirst = [] # [picked_already],
 	) )
 
+	print haskell_args
+
 	sample = "{\"players\" : 4, \"n\" : 10, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
 
-	print sample
 	# with open("frodo.txt", "w") as f:
 	# 	f.write(haskell_args)
 
