@@ -16,7 +16,7 @@ from parser import data, means
 #from parser import data
 
 
-data = data[:10] # only take first ten players
+data = data # only take first ten players
 
 from Container import Container
 
@@ -175,11 +175,12 @@ def index():
 		inventory = players.strpairs(),
 		sweep = sweep_direction,
 		players = game_obj["players"],
-		horizon = 1,
+		horizon = 10,
 		ignoreFirst = [] # [picked_already],
 	) )
 
-	print haskell_args
+
+	print "\n" * 5, sweep_direction, "\n" * 5
 
 	sample = "{\"players\" : 4, \"n\" : 10, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
 

@@ -45,55 +45,70 @@ instance (Ord k, Num a) => Num (Map k a) where
 	signum = undefined
 	fromInteger = undefined
 
-instance Num Vector where
-	x + y = VectorTeam (map_of_vector x + map_of_vector y)
-	x - y = VectorTeam (map_of_vector x - map_of_vector y)
-	x * y = VectorTeam (map_of_vector x * map_of_vector y)
+--instance Num Vector where
+--	x + y = VectorTeam (map_of_vector x + map_of_vector y)
+--	x - y = VectorTeam (map_of_vector x - map_of_vector y)
+--	x * y = VectorTeam (map_of_vector x * map_of_vector y)
 
-	negate = undefined
-	abs = undefined
-	signum = undefined
-	fromInteger = undefined
+--	negate = undefined
+--	abs = undefined
+--	signum = undefined
+--	fromInteger = undefined
 
-categoryCount :: Ord a => [a] -> [a] -> Int
-categoryCount [] [] = 0
-categoryCount (x:xs) (y:ys) = 
-	fromEnum (compare x y) + categoryCount xs ys
-categoryCount _ _ = undefined
+
+
+greatestBy :: Ord b => (a->b) -> [a] -> [a]
+greatestBy key x = reverse (sortBy (compare `on` key) x)
+
 
 
 
 concatHistory :: History -> History -> History
 concatHistory (History hist) (History hist') = History (hist ++ hist')
 
-getTeams :: History -> [(Int, Maybe Vector)]
-getTeams (History pairs) =
-	[(x, get x) | x <- keys] where
-		players x = [ player | (idx, player) <- pairs, idx == x ]
 
-		get x 
-			| null (players x) = Nothing
-			| otherwise = Just (combine (players x))
+historyHeuristic :: Int -> History -> Double
+historyHeuristic i hist =
+	out where
+		History moves = hist
 
-		combine [] = undefined
-		combine pl = foldl1 (+) (map VectorPlayer pl)
+		player j = [ Map.elems (playerNumeric x) | (k, x) <- moves , k == j ]
 
-		keys = nub (map fst pairs)
+		comp :: [[Double]] -> [[Double]] -> Double
+		comp [] [] = 0
+		comp [] b = fromIntegral $ length b
+		comp a [] = fromIntegral $ length a
 
--- assumes that all the keys of pairs are unique!
-evalTeam :: [(Int, Maybe Vector)] -> Int -> Int
-evalTeam pairs idx
-	| isNothing myVec = 0
-	| otherwise = sum [headToHead myVec p | (i, p) <- pairs , i /= idx ] where
-		myVec = Monad.join (lookup idx pairs)
+		-- average comparison
+		comp a b = 
+			let as = [x / fromIntegral (length a) | x <- (foldl1 add a)] in
+			let bs = [x / fromIntegral (length a) | x <- (foldl1 add a)] in
+			sum $ zipWith (score) as bs
 
-headToHead :: Maybe Vector -> Maybe Vector -> Int
-headToHead Nothing _ = 0
-headToHead _ Nothing = 0
-headToHead (Just v0) (Just v1) = categoryCount (vectorValues v0) (vectorValues v1)
+		score :: Double -> Double -> Double
+		score x y
+			| x > y = 1
+			| otherwise = 0
 
-historyHeuristic :: Int -> History -> Int
-historyHeuristic i x = evalTeam (getTeams x) i
+		--mul :: Num a => a -> [a] -> [a]
+		--mul x ys = map (x *) ys
+
+		add :: Num a => [a] -> [a] -> [a]
+		add = zipWith (+)
+
+		opponents :: [Int]
+		opponents = [j | j <- nub (map fst moves), j /= i]
+
+		selfSum = sum $ foldl1 (zipWith (+)) $ player i
+
+		out :: Double
+		out = selfSum + sum [comp (player i) (player j) | j <- opponents]
+
+
+
+
+
+
 
 
 
@@ -117,10 +132,10 @@ normalize gs
 	| gsPlayerIndex gs >= gsPlayers gs + 1 = error $ "normalize: index too big : " ++ show gs
 	| gsPlayerIndex gs <= -2 = error $ "normalize: index too small : " ++ show gs
 
-	| gsPlayerIndex gs == gsN gs =
-		gs { gsN = gsN gs - 1, gsSweep = SweepLeft }
+	| gsPlayerIndex gs == gsPlayers gs =
+		gs { gsPlayerIndex = gsPlayerIndex gs - 1, gsSweep = SweepLeft }
 	| gsPlayerIndex gs == (-1) =
-		gs {gsN = 0, gsSweep = SweepRight }
+		gs {gsPlayerIndex = 0, gsSweep = SweepRight }
 
 	| otherwise = gs
 
@@ -129,7 +144,8 @@ skipIndex idx xs =
 	[x | (i,x) <- zip [0..] xs, i /= idx ]
 
 children :: GameState -> [GameState]
-children gs = [ normalize (pickChildren gs i) | i <- [0 .. length (gsInventory gs) - 1], not (elem i (gsIgnoreFirst gs)) ] 
+children gs = [ normalize (pickChildren gs i) | i <- [0 .. last], not (elem i (gsIgnoreFirst gs)) ] where
+	last = min (gsInventoryLimit gs - 1) (length (gsInventory gs) - 1)
 	
 pickChildren :: GameState -> Int -> GameState
 pickChildren gs i 
@@ -150,7 +166,7 @@ pickChildren gs i
 
 sortedInventory :: GameState -> [Player]
 sortedInventory gs =
-	reverse $ sortBy (compare `on` playerHeuristic) (gsInventory gs)
+	greatestBy playerHeuristic (gsInventory gs)
 
 firstMaxBy :: Ord a => (b -> a) -> [b] -> b
 firstMaxBy _ [] = error "firstMaxBy cannot take max of empty list"
@@ -188,12 +204,18 @@ solve' gs
 	| gsHorizon gs == 0 =
 		gsHistory gs
 	| otherwise = 
-		firstMaxBy (historyHeuristic (gsPlayerIndex gs)) (map solve' (children gs))
+		firstMaxBy (historyHeuristic (gsPlayerIndex gs)) (map solve (children gs))
 
 bestMoves :: GameState -> [History]
-bestMoves gs = 
-      greatestBy (historyHeuristic (gsPlayerIndex gs)) (map solve' (children gs)) where
-           greatestBy key x = reverse (sortBy (compare `on` key) x)
+bestMoves gs 
+	| gsHorizon gs == 0 = 
+		[ History [(gsPlayerIndex gs, x)] | x <- gsInventory gs']
+	| otherwise = 
+		greatestBy (historyHeuristic (gsPlayerIndex gs')) (map solve (children gs')) where
+			gs' = gs {
+				gsInventory = sortedInventory gs
+			}
+           
 
 topN :: Int -> GameState -> [History]
 topN i gs = take i (filter good (bestMoves gs)) where
@@ -208,24 +230,25 @@ topN i gs = take i (filter good (bestMoves gs)) where
      gimme xs k 
      	| 0 <= k && k < length xs = xs !! k
      	| otherwise = error "out of bounds in topN you should look into that"
-      
--- testing section yay! 
+       
 
---player1 = Player (fromList [("a", 10), ("b", 30)]) Map.empty
---player2 = Player (fromList [("a", 9), ("b", 20)]) Map.empty
---player3 = Player (fromList [("a", 2), ("b", 70)]) Map.empty
---player4 = Player (fromList [("a", 1), ("b", 80)]) Map.empty
+player1 = Player (fromList [("a", 10), ("b", 30)]) Map.empty
+player2 = Player (fromList [("a", 9), ("b", 20)]) Map.empty
+player3 = Player (fromList [("a", 2), ("b", 70)]) Map.empty
+player4 = Player (fromList [("a", 1), ("b", 80)]) Map.empty
 
---gameState = GameState {
---	gsN = 10,
---	gsHistory = History [],
---	gsPrehistory = History [],
---	gsInventory = [player1, player2, player3, player4],
---	gsHorizon = 3,
---	gsSweep = SweepRight,
---	gsPlayerIndex = 0,
---	gsIgnoreFirst = []
---}
+gameState = GameState {
+	gsN = 10,
+	gsPlayers = 2,
+	gsHistory = History [],
+	gsPrehistory = History [],
+	gsInventory = [player1, player2, player3, player4],
+	gsHorizon = 2,
+	gsSweep = SweepRight,
+	gsPlayerIndex = 0,
+	gsIgnoreFirst = [],
+	gsInventoryLimit = 30
+}
 
 ---- crap
 

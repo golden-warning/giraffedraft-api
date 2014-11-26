@@ -19,5 +19,6 @@ data GameState = GameState {
 	gsPrehistory :: History,
 	gsSweep :: Sweep,
 	gsIgnoreFirst :: [Int],
-	gsInventory :: [Player]
+	gsInventory :: [Player],
+	gsInventoryLimit :: Int
 } deriving (Eq, Show)

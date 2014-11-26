@@ -41,12 +41,13 @@ gameState_of g =
 		gsN = n g,
 		gsPlayerIndex = playerIndex g,
 		gsHistory = History [(index, readPlayer list) | (index, list) <- history g],
-		gsHorizon = 10,
+		gsHorizon = 3,
 		gsPrehistory = History [(index, readPlayer list) | (index, list) <- preHistory g],
 		gsSweep = sw (sweep g),
 		gsIgnoreFirst = ignoreFirst g,
 		gsInventory = [readPlayer list | list <- inventory g],
-		gsPlayers = players g
+		gsPlayers = players g,
+		gsInventoryLimit = 15
 	} where
 		sw 1 = SweepRight
 		sw (-1) = SweepLeft
