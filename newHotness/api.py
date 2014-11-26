@@ -149,7 +149,18 @@ def index():
 @enable_cors
 def index():
 	all_items = request.forms.allitems()
-	request_data = loads(all_items[0][0])
+
+	# accepts data in the old or new format
+
+	all_data = loads(all_items[0][0])
+	if "state" in all_data and "players" in all_data:
+		print "new format with state and players"
+		request_data = all_data["state"]
+		player_map = all_data["players"]
+	else:
+		print "old format with just state"
+		request_data = all_data
+		player_map = None
 
 	game_obj = game_state_to_array(request_data)
 
@@ -187,12 +198,18 @@ def index():
 	# with open("frodo.txt", "w") as f:
 	# 	f.write(haskell_args)
 
-	a = test.query("tmp/request.txt")
+	lst = test.query("tmp/request.txt")
+	if player_map is None:
+		return lst
 
-
-
-
-	return a
+	else:
+		out = []
+		dct = loads(player_map)
+		for x in lst:
+			for index, name in dct.iteritems():
+				if x in name:
+					out.append(index)
+		return out
 
 
 hostname = socket.gethostname()

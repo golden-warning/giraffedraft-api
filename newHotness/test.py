@@ -8,6 +8,6 @@ def query(haskell_args):
 	(output, err) = process.communicate()
 	exit_code = process.wait()
 
-	print output
+	print "query in test.py :", output
 
 	return output
