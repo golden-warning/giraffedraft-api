@@ -149,7 +149,18 @@ def index():
 @enable_cors
 def index():
 	all_items = request.forms.allitems()
-	request_data = loads(all_items[0][0])
+
+	# accepts data in the old or new format
+
+	all_data = loads(all_items[0][0])
+	if "state" in all_data and "players" in all_data:
+		print "new format with state and players"
+		request_data = all_data["state"]
+		player_map = all_data["players"]
+	else:
+		print "old format with just state"
+		request_data = all_data
+		player_map = None
 
 	game_obj = game_state_to_array(request_data)
 
@@ -179,20 +190,27 @@ def index():
 		ignoreFirst = [] # [picked_already],
 	) )
 
-
-	print "\n" * 5, sweep_direction, "\n" * 5
+	with open("tmp/request.txt", "w") as f:
+		f.write(haskell_args)
 
 	sample = "{\"players\" : 4, \"n\" : 10, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
 
 	# with open("frodo.txt", "w") as f:
 	# 	f.write(haskell_args)
 
-	a = test.query(haskell_args)
+	lst = test.query("tmp/request.txt")
+	if player_map is None:
+		return lst
 
+	else:
+		out = []
+		for x in loads(lst):
+			for index, name in player_map.iteritems():
+				if x in name:
+					out.append(index)
+					break
 
-
-
-	return a
+		return dumps(out)
 
 
 hostname = socket.gethostname()
