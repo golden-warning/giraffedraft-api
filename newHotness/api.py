@@ -204,12 +204,13 @@ def index():
 
 	else:
 		out = []
-		dct = loads(player_map)
-		for x in lst:
-			for index, name in dct.iteritems():
+		for x in loads(lst):
+			for index, name in player_map.iteritems():
 				if x in name:
 					out.append(index)
-		return out
+					break
+
+		return dumps(out)
 
 
 hostname = socket.gethostname()
