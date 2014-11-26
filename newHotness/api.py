@@ -179,15 +179,15 @@ def index():
 		ignoreFirst = [] # [picked_already],
 	) )
 
-
-	print "\n" * 5, sweep_direction, "\n" * 5
+	with open("tmp/request.txt", "w") as f:
+		f.write(haskell_args)
 
 	sample = "{\"players\" : 4, \"n\" : 10, \"playerIndex\" : 2,\"history\" : [],\"horizon\" : 1,\"preHistory\" : [],\"sweep\" : 1,\"ignoreFirst\" : [],\"inventory\" : [[[\"a\",\"4\"]], [[\"a\", \"5\"]]]}"
 
 	# with open("frodo.txt", "w") as f:
 	# 	f.write(haskell_args)
 
-	a = test.query(haskell_args)
+	a = test.query("tmp/request.txt")
 
 
 
