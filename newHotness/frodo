@@ -1,0 +1,10 @@
+{
+  "n" : 4,
+  "playerIndex" : 3,
+  "history" : [(1, [["4","5"]])]
+  "horizon" : 3,
+  "preHistory" : [],
+  "sweep" : 1,
+  "ignoreFirst" : [],
+  "inventory" : []
+}
