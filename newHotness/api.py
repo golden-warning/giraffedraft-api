@@ -15,6 +15,8 @@ import test
 from parser import data, means
 #from parser import data
 
+import time
+import calendar
 
 data = data # only take first ten players
 
@@ -52,12 +54,15 @@ def game_state_to_array(obj):
 	players = len(obj)
 
 	for key, value in obj.iteritems():
-		assert set(value.keys()) == set(team_keys)
+		if set(value.keys()) != set(team_keys):
+			print value.keys()
+			print team_keys
+			assert False
 
 		vectors = value["team"]
 
 		if (value["isPlayer"]):
-			player_index = value["draftPosition"]-1
+			player_index = int(value["draftPosition"])-1
 
 		for yahoo_rank, vector_obj in vectors.iteritems():
 			my_vector = {}
@@ -66,7 +71,7 @@ def game_state_to_array(obj):
 					my_vector[k] = float(v)
 				else:
 					my_vector[k] = v
-
+			
 			my_vector["yahoo-rank"] = yahoo_rank
 
 			vector_name = team_name_regex.split(vector_obj["playerName"])[0].strip()
@@ -75,7 +80,7 @@ def game_state_to_array(obj):
 
 			# global name to id map
 
-			prehistory.append( (value["draftPosition"]-1, my_vector) )
+			prehistory.append( (int(value["draftPosition"])-1, my_vector) )
 
 	#print "prehistory"
 	#print map(do_snd(string_assoc), prehistory)
@@ -162,7 +167,14 @@ def index():
 		request_data = all_data
 		player_map = None
 
-	game_obj = game_state_to_array(request_data)
+
+	try:
+		game_obj = game_state_to_array(request_data)
+	except Exception as e:
+		print repr(e)
+		with open("log/"+"log"+str(time.time()), "w") as log:
+			log.write( dumps(all_data)  )
+		return "[]"
 
 	complete_cycle_count = int( len(game_obj["prehistory"])/game_obj["players"] )
 
