@@ -26,6 +26,11 @@ from Container import Container
 
 app = bottle.app()
 
+def get_assoc(key, container):
+	for (k,v) in container:
+		if k == key:
+			return v
+	raise KeyError("get_assoc key %s not in container" % key)
 
 def do_snd(fun):
 	return lambda x : (x[0],fun(x[1]))
@@ -40,7 +45,7 @@ team_name_regex = re.compile(r"\w{,3} \-")
 
 string_assoc = lambda d : [ (str(k), str(v)) for k,v in d.items() ]
 
-name_to_id = {}
+name_to_yahoo_rank = {}
 
 def game_state_to_array(obj):
 	assert isinstance(obj, dict)
@@ -77,6 +82,8 @@ def game_state_to_array(obj):
 			vector_name = team_name_regex.split(vector_obj["playerName"])[0].strip()
 
 			my_vector["name"] = vector_name
+
+			name_to_yahoo_rank[vector_name] = yahoo_rank
 
 			# global name to id map
 
@@ -180,8 +187,8 @@ def index():
 
 	picked_already = []
 
-	# for player_idx,obj in game_obj["prehistory"]:
-	# 	picked_already.append( name_to_id[obj["name"]] )
+	for player_idx,obj in game_obj["prehistory"]:
+	 	picked_already.append( name_to_yahoo_rank[get_assoc(key="name",container=obj)] )
 
 	if complete_cycle_count % 2 == 0:
 		sweep_direction = 1
