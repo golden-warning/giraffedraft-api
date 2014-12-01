@@ -206,7 +206,7 @@ def index():
 		sweep = sweep_direction,
 		players = game_obj["players"],
 		horizon = 10,
-		ignoreFirst = [] # [picked_already],
+		ignoreFirst = picked_already,
 	) )
 
 	with open("tmp/request.txt", "w") as f:
